@@ -50,7 +50,7 @@ async function loginUser(req,res){
 				res.status(401).json({"message": "Invalid credentials" });
 			} else{
 				const userToken = jwt.sign({ id: user._id },process.env.JWT_SECRET,{expiresIn: '7d'});
-				res.status(200).json({"user token": userToken});
+				res.status(200).json({"userToken": userToken});
 			} 
 		}else{
 			res.status(401).json({'message': 'Invalid credentials'});
