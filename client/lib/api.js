@@ -28,4 +28,56 @@ const loginUser = async ( email, password ) => {
   }
 };
 
-export { registerUser, loginUser };
+const getBoards = async () =>  {
+  const token = localStorage.getItem('token');
+  try{
+    const response = await fetch(`${API_URL}/api/boards`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`
+      }
+    });
+    const data = await response.json();
+    return data;
+  }catch(error){
+    console.log(error);
+  }
+}
+
+const createBoard = async (title)=>{
+  const token = localStorage.getItem('token');
+  try{
+    const response = await fetch(`${API_URL}/api/boards`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`
+      },
+      body: JSON.stringify({ title })
+    });
+    const data = await response.json();
+    return data;
+  }catch(error){
+    console.log(error);
+  }
+}
+
+const deleteBoard = async (id) => {
+  const token = localStorage.getItem('token');
+  try{
+    const response = await fetch(`${API_URL}/api/boards/${id}`, {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`
+      },
+    });
+    const data = await response.json();
+    return data;
+  }catch(error){
+    console.log(error);
+  }
+}
+
+export { registerUser, loginUser, getBoards, createBoard, deleteBoard };
