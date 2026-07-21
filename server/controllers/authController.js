@@ -60,4 +60,8 @@ async function loginUser(req,res){
 	}
 }
 
-module.exports = { registerUser, loginUser };
+const verifyToken = async (req, res)=>{
+	res.status(200).json({ valid: true, user: req.user})
+} 
+
+module.exports = { registerUser, loginUser, verifyToken };

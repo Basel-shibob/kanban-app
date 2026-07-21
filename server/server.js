@@ -15,6 +15,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/boards', boardRoutes);
 app.use('/api/tasks', taskRoutes);
 
+
 app.get('/api/health', (req, res) =>{
 	res.json({ status: 'Server is alive', timestamp: new Date() });
 });

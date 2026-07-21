@@ -28,6 +28,21 @@ const loginUser = async ( email, password ) => {
   }
 };
 
+const verifyToken = async () =>{
+  const token = localStorage.getItem('token')
+  try{
+    const response = await fetch(`${API_URL}/api/auth/verify`, {
+      method: "GET",
+      headers: {
+        "AUthorization": `Bearer ${token}`
+      }
+    })
+    return response.ok
+  }catch(error){
+    console.log(error)
+  }
+}
+
 const getBoards = async () =>  {
   const token = localStorage.getItem('token');
   try{
@@ -150,4 +165,4 @@ const deleteTask  = async (id)=>{
   }
 }
 
-export { registerUser, loginUser, getBoards, createBoard, deleteBoard, getTasks, createTask, updateTask, deleteTask };
+export { registerUser, loginUser, getBoards, createBoard, deleteBoard, getTasks, createTask, updateTask, deleteTask, verifyToken };

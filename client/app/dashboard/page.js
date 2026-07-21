@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { createBoard, deleteBoard, getBoards } from "@/lib/api";
+import { createBoard, deleteBoard, getBoards, verifyToken } from "@/lib/api";
 
 export default function Dashboard() {
   const router = useRouter();
@@ -9,17 +9,27 @@ export default function Dashboard() {
   const [title, setTitle] = useState("");
   const [loading, setLoading] = useState(true);
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    console.log("token is:", token);
-    if (!token) {
-      router.push("/login");
-    }
-    const fetchData = async () => {
-      const data = await getBoards();
-      setBoards(data.boards);
-      setLoading(false);
+    const checkAuth = async () => {
+      const token = localStorage.getItem("token");
+      // console.log("token is:", token);
+      if (!token) {
+        router.push("/login");
+        return;
+      }
+      const isValid = await verifyToken();
+      if (!isValid) {
+        localStorage.removeItem("token");
+        router.push("/login");
+      }
+
+      const fetchData = async () => {
+        const data = await getBoards();
+        setBoards(data.boards);
+        setLoading(false);
+      };
+      fetchData();
     };
-    fetchData();
+    checkAuth()
   }, []);
   const handleCreateBoard = async () => {
     if (title) {
