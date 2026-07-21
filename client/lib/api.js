@@ -80,4 +80,74 @@ const deleteBoard = async (id) => {
   }
 }
 
-export { registerUser, loginUser, getBoards, createBoard, deleteBoard };
+const getTasks = async (boardId)=>{
+  const token = localStorage.getItem('token');
+  try{
+    const response = await fetch(`${API_URL}/api/tasks/${boardId}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`
+      },
+    });
+    const data = await response.json();
+    return data;
+  }catch(error){
+    console.log(error)
+  }
+}
+
+const createTask = async (title, description, boardId)=>{
+  const token = localStorage.getItem('token');
+  try {
+    const response = await fetch(`${API_URL}/api/tasks`,{
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`
+      },
+      body: JSON.stringify({ title, description, boardId }),
+    });
+    const data = await response.json()
+    return data
+  } catch (error) {
+    console.log(error)
+  }
+}
+
+const updateTask = async (id, status)=>{
+  const token = localStorage.getItem('token');
+  try {
+    const response = await fetch(`${API_URL}/api/tasks/${id}`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`
+      },
+      body: JSON.stringify({status})
+    });
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+const deleteTask  = async (id)=>{
+  const token = localStorage.getItem('token');
+  try {
+    const response = await fetch(`${API_URL}/api/tasks/${id}`, {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`
+      }
+    });
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+export { registerUser, loginUser, getBoards, createBoard, deleteBoard, getTasks, createTask, updateTask, deleteTask };
