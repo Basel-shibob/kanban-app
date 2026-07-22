@@ -1,7 +1,82 @@
 "use client";
 import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
-import { createTask, deleteTask, getTasks, updateTask, verifyToken } from "@/lib/api";
+import {
+  createTask,
+  deleteTask,
+  getTasks,
+  updateTask,
+  verifyToken,
+} from "@/lib/api";
+
+const COLUMNS = [
+  {
+    key: "todo",
+    label: "To Do",
+    dot: "#8b8f98",
+    next: "inprogress",
+    nextLabel: "Start",
+  },
+  {
+    key: "inprogress",
+    label: "In Progress",
+    dot: "#5e6ad2",
+    next: "done",
+    nextLabel: "Complete",
+  },
+  {
+    key: "done",
+    label: "Done",
+    dot: "#3fb950",
+    next: "inprogress",
+    nextLabel: "Reopen",
+  },
+];
+
+function Column({ col, tasks, onMove, onDelete }) {
+  const items = tasks.filter((t) => t.status === col.key);
+  return (
+    <div className="flex flex-col">
+      <div className="flex items-center gap-2 mb-3 px-1">
+        <span
+          className="w-2 h-2 rounded-full"
+          style={{ background: col.dot }}
+        />
+        <span className="text-sm font-medium text-text">{col.label}</span>
+        <span className="text-xs text-faint bg-surface-2 px-1.5 rounded ">
+          {items.length}
+        </span>
+      </div>
+      <div className="flex flex-col gap-2">
+        {items.map((task) => (
+          <div
+            key={task._id}
+            className="group bg-surface border border-border hover:border-[#2c2d30] rounded-[7px] p-3 transition-colors"
+          >
+            <p className="text-sm text-text font-medium">{task.title}</p>
+            {task.description && (
+              <p className="text-xs text-muted mt-1">{task.description}</p>
+            )}
+            <div className="flex items-center gap-3 mt-3 opacity-0 group-hover:opacity-100 transition-opacity">
+              <button
+                onClick={() => onMove(task._id, col.next)}
+                className="text-xs text-muted hover:text-accent transition-colors"
+              >
+                {col.nextLabel}
+              </button>
+              <button
+                onClick={() => onDelete(task._id)}
+                className="text-xs text-faint hover:text-danger transition-colors"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 export default function BoardPage() {
   const router = useRouter();
@@ -33,7 +108,7 @@ export default function BoardPage() {
       };
       fetchData();
     };
-    checkAuth()
+    checkAuth();
   }, []);
 
   const handleCreateTask = async () => {
@@ -58,122 +133,64 @@ export default function BoardPage() {
     setTasks(data.tasks);
   };
 
-  if (loading) return <div>Loading...</div>;
+  if (loading) return <div className="text-muted p-6 text-sm">Loading…</div>;
 
   return (
     <>
-      <div className="bg-gray-900 min-h-screen text-white">
-        <div className="bg-gray-800 p-4 flex items-center gap-4">
+      <div className="min-h-screen bg-bg text-text">
+        <header className="flex items-center gap-3 px-6 h-14 border-b border-border">
           <button
+            className="text-muted hover:text-text text-sm transition-colors"
             onClick={() => {
               router.push("/dashboard");
             }}
           >
-            Back
+            ← Back
           </button>
-          <h4>Board page</h4>
-        </div>
-        <div className="p-6">
-          <input
-            name="title"
-            placeholder="Title"
-            type="text"
-            required
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-          />
-          <input
-            type="text"
-            name="description"
-            placeholder="Add Description"
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-          />
-          {/* {error && <p>{error}</p>} */}
-          <button type="button" onClick={handleCreateTask}>
-            add task
-          </button>
-        </div>
-        <div className="grid grid-cols-3 gap-4">
-          <div className="bg-gray-800 rounded-lg p-4">
-            {/* Column header */}
-            <div className="text-lg font-bold mb-4">To Do</div>
+          <span className="text-faint">/</span>
+          <h1 className="text-sm font-semibold">Board</h1>
+        </header>
 
-            {/* Filter and map tasks */}
-            {tasks
-              .filter((task) => task.status === "todo")
-              .map((task) => (
-                <div key={task._id} className="bg-gray-700 rounded p-3 mb-3">
-                  <p>{task.title}</p>
-                  <p>{task.description}</p>
-                  <button
-                    onClick={() => handleUpdateTask(task._id, "inprogress")}
-                    className="bg-blue-500 text-white text-sm rounded p-1 mt-1 hover:bg-blue-600"
-                  >
-                    In Progress
-                  </button>
-                  <button
-                    onClick={() => handleDeleteTask(task._id)}
-                    className="bg-red-500 text-white text-sm rounded p-1 mt-1 hover:bg-red-600"
-                  >
-                    Delete Task
-                  </button>
-                </div>
-              ))}
+        <div className="max-w-6xl mx-auto px-6 py-6">
+          <div className="flex items-center gap-2 mb-8">
+            <input
+              placeholder="Task title"
+              name="title"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              type="text"
+              required
+              className="bg-surface border border-border focus:border-accent focus:ring-1
+              focus:ring-accent text-text placeholder:text-faint text-sm px-3 py-2 rounded-[7px]
+              outline-none transition-colors w-48"
+            />
+            <input
+              placeholder="Description (optional)"
+              value={description}
+              type="text"
+              name="description"
+              onChange={(e) => setDescription(e.target.value)}
+              className="bg-surface border border-border focus:border-accent focus:ring-1 focus:ring-accent text-text placeholder:text-faint text-sm px-3 py-2 rounded-[7px] outline-none
+  transition-colors flex-1 max-w-md"
+            />
+            <button
+              type="button"
+              onClick={handleCreateTask}
+              className="bg-accent hover:bg-[#6872e5] text-white text-sm font-medium px-3 py-2 rounded-[7px] transition-colors whitespace-nowrap"
+            >
+              Add task
+            </button>
           </div>
-
-          <div className="bg-gray-800 rounded-lg p-4">
-            {/* Column header */}
-            <div className="text-lg font-bold mb-4">In Progress</div>
-
-            {/* Filter and map tasks */}
-            {tasks
-              .filter((task) => task.status === "inprogress")
-              .map((task) => (
-                <div key={task._id} className="bg-gray-700 rounded p-3 mb-3">
-                  <p>{task.title}</p>
-                  <p>{task.description}</p>
-                  <button
-                    onClick={() => handleUpdateTask(task._id, "done")}
-                    className="bg-blue-500 text-white text-sm rounded p-1 mt-1 hover:bg-blue-600"
-                  >
-                    Done
-                  </button>
-                  <button
-                    onClick={() => handleDeleteTask(task._id)}
-                    className="bg-red-500 text-white text-sm rounded p-1 mt-1 hover:bg-red-600"
-                  >
-                    Delete Task
-                  </button>
-                </div>
-              ))}
-          </div>
-
-          <div className="bg-gray-800 rounded-lg p-4">
-            {/* Column header */}
-            <div className="text-lg font-bold mb-4">Done</div>
-
-            {/* Filter and map tasks */}
-            {tasks
-              .filter((task) => task.status === "done")
-              .map((task) => (
-                <div key={task._id} className="bg-gray-700 rounded p-3 mb-3">
-                  <p>{task.title}</p>
-                  <p>{task.description}</p>
-                  <button
-                    onClick={() => handleUpdateTask(task._id, "inprogress")}
-                    className="bg-blue-500 text-white text-sm rounded p-1 mt-1 hover:bg-blue-600"
-                  >
-                    In Progress
-                  </button>
-                  <button
-                    onClick={() => handleDeleteTask(task._id)}
-                    className="bg-red-500 text-white text-sm rounded p-1 mt-1 hover:bg-red-600"
-                  >
-                    Delete Task
-                  </button>
-                </div>
-              ))}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {COLUMNS.map((col) => (
+              <Column
+                key={col.key}
+                col={col}
+                tasks={tasks}
+                onMove={handleUpdateTask}
+                onDelete={handleDeleteTask}
+              />
+            ))}
           </div>
         </div>
       </div>

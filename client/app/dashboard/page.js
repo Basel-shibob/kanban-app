@@ -29,7 +29,7 @@ export default function Dashboard() {
       };
       fetchData();
     };
-    checkAuth()
+    checkAuth();
   }, []);
   const handleCreateBoard = async () => {
     if (title) {
@@ -44,68 +44,70 @@ export default function Dashboard() {
     const data = await getBoards();
     setBoards(data.boards);
   };
-  if (loading) return <div className="text-white p-4">Loading...</div>;
+  if (loading) return <div className="text-muted p-6 text-sm">Loading...</div>;
   return (
     <>
-      <div className="bg-gray-900 min-h-screen text-white">
+      <div className="min-h-screen bg-bg text-text">
         {/* navbar */}
-        <div className="bg-gray-800 flex justify-between items-center p-4">
-          <h1 className="">Kanban Board</h1>
+        <header className="flex justify-between items-center px-6 h-14 border-b border-border">
+          <h1 className="text-sm font-semibold">Kanban</h1>
           <button
             onClick={() => {
               localStorage.removeItem("token");
               router.push("login");
             }}
+            className="text-muted hover:text-text text-sm transition-colors"
           >
-            logout
+            Log out
           </button>
-        </div>
+        </header>
         {/* content */}
-        <div className="p-6">
-          <h4>Create a new board</h4>
-          <div className="flex items-center mb-6">
+        <main className="max-w-5xl mx-auto px-6 py-8">
+          {/* Create a new board */}
+          <div className="flex items-center gap-2 mb-8">
             <input
               type="text"
               name="title"
-              placeholder="New Board"
+              placeholder="New Board Name"
               required
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="bg-gray-700 text-white rounded p-2 outline-none"
+              onKeyDown={(e) => e.key === "Enter" && handleCreateBoard()}
+              className="bg-surface border border-border focus:border-accent focus:ring-1 focus:ring-accent text-text placeholder:text-faint text-sm px-3 py-2 rounded-[7px] outline-none transition-colors w-64"
             />
             <button
               onClick={handleCreateBoard}
-              className="bg-purple-600 text-white rounded p-2 ml-2 hover:bg-purple-700"
+              className="bg-accent hover:bg-[#6872e5] text-white text-sm font-medium px-3 py-2 rounded-[7px] transition-colors"
             >
-              + Create
+             Create board
             </button>
           </div>
 
-          <h4 className="text-white font-semibold mb-2 cursor-pointer hover:text-purple-400">
+          <h2 className="text-faint text-xs font-medium uppercase tracking-wide mb-3">
             Your Boards
-          </h4>
-          <div className="grid grid-cols-3 gap-4">
+          </h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
             {boards.map((board) => (
-              <div key={board._id} className="bg-gray-700 rounded-lg p-4">
+              <div key={board._id} className="group bg-surface border border-border hover:border-[#2c2d30] rounded-[7px] p-4 transition-colors">
                 <p
                   onClick={() => {
                     router.push(`/board/${board._id}`);
                   }}
-                  className="text-white font-semibold mb-2 cursor-pointer hover:text-purple-400"
+                  className="text-text font-medium mb-3 cursor-pointer group-hover:text-accent transition-colors"
                 >
                   {board.title}
                 </p>
                 <button
                   onClick={() => handleDeleteBoard(board._id)}
                   type="button"
-                  className="bg-red-500 text-white text-sm rounded p-1 hover:bg-red-600 mt-2"
+                  className="text-faint hover:text-danger text-xs transition-colors"
                 >
-                  Delete Board
+                  Delete
                 </button>
               </div>
             ))}
           </div>
-        </div>
+        </main>
       </div>
     </>
   );
