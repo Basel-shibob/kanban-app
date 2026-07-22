@@ -10,8 +10,13 @@ const app = express();
 connectDB();
 
 app.use(cors({
-  origin: '*'
+  origin: function(origin, callback) {
+    callback(null, true);
+  },
+  credentials: true
 }));
+app.options('*', cors());
+
 app.use(express.json());
 app.use('/api/auth', authRoutes);
 app.use('/api/boards', boardRoutes);

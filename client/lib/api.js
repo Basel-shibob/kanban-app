@@ -21,10 +21,12 @@ const loginUser = async ( email, password ) => {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, password }),
     });
+    console.log('response status:', response.status);
     const data = await response.json();
+    console.log('response data:', data);
     return data;
   } catch (error) {
-    console.log(error);
+    console.log('fetch error:', error);
   }
 };
 
