@@ -1,4 +1,4 @@
-const API_URL = "https://kanban-app-production-4983.up.railway.app";
+const API_URL = "https://kanban-app-production-88c3.up.railway.app";
 
 const registerUser = async (name, email, password ) => {
   try {
