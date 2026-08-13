@@ -88,17 +88,17 @@ export default function Dashboard() {
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
             {boards.map((board) => (
-              <div key={board._id} className="group bg-surface border border-border hover:border-[#2c2d30] rounded-[7px] p-4 transition-colors">
+              <div key={board.id} className="group bg-surface border border-border hover:border-[#2c2d30] rounded-[7px] p-4 transition-colors">
                 <p
                   onClick={() => {
-                    router.push(`/board/${board._id}`);
+                    router.push(`/board/${board.id}`);
                   }}
                   className="text-text font-medium mb-3 cursor-pointer group-hover:text-accent transition-colors"
                 >
                   {board.title}
                 </p>
                 <button
-                  onClick={() => handleDeleteBoard(board._id)}
+                  onClick={() => handleDeleteBoard(board.id)}
                   type="button"
                   className="text-faint hover:text-danger text-xs transition-colors"
                 >

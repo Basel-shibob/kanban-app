@@ -36,7 +36,7 @@ const create = async ({ title, description, boardId }) => {
 };
 
 const update = async (id, updateData) => {
-  const doc = await Task.findByIdAndUpdate(id, updateData, { new: true });
+  const doc = await Task.findByIdAndUpdate(id, updateData, { returnDocument: "after" });
   if (!doc) {
     return null;
   }

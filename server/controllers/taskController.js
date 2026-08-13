@@ -1,6 +1,6 @@
-const Board = require("../models/Board.js");
 const mongoose = require("mongoose");
 const taskRepo = require("../storage/taskRepository.js");
+const boardRepo = require("../storage/boardRepository.js");
 
 const createTask = async (req, res) => {
   const { title, description, boardId } = req.body;
@@ -13,13 +13,13 @@ const createTask = async (req, res) => {
   if (!mongoose.isValidObjectId(boardId)) {
     return res.status(400).json({ message: "Invalid board id" });
   }
-  const board = await Board.findById(boardId);
+  const board = await boardRepo.getById(boardId);
   if (!board) {
     return res.status(404).json({
       message: "Board not found",
     });
   }
-  if (board.user.toString() !== req.user.id) {
+  if (board.user !== req.user.id) {
     return res.status(403).json({
       message: "Not authorized",
     });
@@ -37,13 +37,13 @@ const getTasks = async (req, res) => {
     return res.status(400).json({ message: "Invalid board id" });
   }
 
-  const board = await Board.findById(boardId);
+  const board = await boardRepo.getById(boardId);
   if (!board) {
     return res.status(404).json({
       message: "Board Not Found",
     });
   }
-  if (board.user.toString() !== req.user.id) {
+  if (board.user !== req.user.id) {
     return res.status(403).json({
       message: "Not authorized",
     });
@@ -69,13 +69,13 @@ const updateTask = async (req, res) => {
       message: "Task Not Found",
     });
   }
-  const board = await Board.findById(task.board);
+  const board = await boardRepo.getById(task.board);
   if (!board) {
     return res.status(404).json({
       message: "Board Not Found",
     });
   }
-  if (board.user.toString() !== req.user.id) {
+  if (board.user !== req.user.id) {
     return res.status(403).json({
       message: "Not authorized",
     });
@@ -103,13 +103,13 @@ const deleteTask = async (req, res) => {
       message: "Task Not Found",
     });
   }
-  const board = await Board.findById(task.board);
+  const board = await boardRepo.getById(task.board);
   if (!board) {
     return res.status(404).json({
       message: "Board Not Found",
     });
   }
-  if (board.user.toString() !== req.user.id) {
+  if (board.user !== req.user.id) {
     return res.status(403).json({
       message: "Not authorized",
     });
