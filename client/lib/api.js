@@ -1,4 +1,4 @@
-const API_URL = "https://kanban-app-production-88c3.up.railway.app";
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 const registerUser = async (name, email, password ) => {
   try {
@@ -36,7 +36,7 @@ const verifyToken = async () =>{
     const response = await fetch(`${API_URL}/api/auth/verify`, {
       method: "GET",
       headers: {
-        "AUthorization": `Bearer ${token}`
+        "Authorization": `Bearer ${token}`
       }
     })
     return response.ok
