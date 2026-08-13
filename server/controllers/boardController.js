@@ -1,4 +1,6 @@
 const Board = require('../models/Board.js');
+const mongoose = require('mongoose');
+const Task = require('../models/Task.js');
 
 const createBoard = async (req, res) => {
 	const { title } = req.body;
@@ -13,7 +15,7 @@ const createBoard = async (req, res) => {
 		await newBoard.save();
 		res.status(200).json(newBoard);
 	}catch(error){
-		console.log(error);
+		console.error("Error creating board:", error);
 		res.status(500).json({message: "Server error"});
 	}
 };
@@ -23,21 +25,27 @@ const getBoards = async (req, res) => {
 		const boards = await Board.find({user: req.user.id});
 		res.status(200).json({boards});
 	}catch(error){
-		console.log(error);
+		console.error("Error fetching boards:", error);
 		res.status(500).json({message: "Server error"});
 	}
 }
 
 const deleteBoard = async (req, res) =>{
 	try{
-		const board = await Board.findById(req.params.id);
+		const id = req.params.id;
+		if(!mongoose.isValidObjectId(id)){
+			return res.status(400).json({message: "Invalid board id"});
+		}
+		const board = await Board.findById(id);
 		if(!board){
-			res.status(404).json({message: "Board not found"});
+			return res.status(404).json({message: "Board not found"});
 		}else{
 			if(board.user.toString() === req.user.id){
+				const { deletedCount } = await Task.deleteMany({board: board._id});
 				await board.deleteOne()
 				res.status(200).json({
-					message: " Board deleted successfully "
+					message: " Board deleted successfully ",
+					deletedTasks: deletedCount
 				});
 			}else{
 				return res.status(403).json({
@@ -46,7 +54,7 @@ const deleteBoard = async (req, res) =>{
 			}
 		}
 	}catch(error){
-		console.log(error);
+		console.error("Error deleting board:", error);
 		res.status(500).json({message: "Server error"});
 	}
 };
