@@ -1,6 +1,6 @@
 const Board = require("../models/Board.js");
-const Task = require("../models/Task.js");
 const mongoose = require("mongoose");
+const taskRepo = require("../storage/taskRepository.js");
 
 const createTask = async (req, res) => {
   const { title, description, boardId } = req.body;
@@ -24,14 +24,7 @@ const createTask = async (req, res) => {
       message: "Not authorized",
     });
   }
-  const newTask = new Task({
-    title,
-    description,
-    board: boardId,
-  });
-
-  await newTask.save();
-
+  const newTask = await taskRepo.create({ title, description, boardId });
   res.status(201).json({
     message: "New task created successfully",
     newTask,
@@ -55,7 +48,7 @@ const getTasks = async (req, res) => {
       message: "Not authorized",
     });
   }
-  const tasks = await Task.find({ board: boardId });
+  const tasks = await taskRepo.getAllByBoard(boardId);
   return res.status(200).json({
     tasks,
   });
@@ -70,7 +63,7 @@ const updateTask = async (req, res) => {
 
   const validStatuses = ["todo", "inprogress", "done"];
 
-  const task = await Task.findById(taskId);
+  const task = await taskRepo.getById(taskId);
   if (!task) {
     return res.status(404).json({
       message: "Task Not Found",
@@ -92,10 +85,9 @@ const updateTask = async (req, res) => {
       message: "Invalid Status",
     });
   }
-  task.status = status;
-  await task.save();
+  const updatedTask = await taskRepo.update(taskId, { status });
   res.status(200).json({
-    task,
+    task: updatedTask,
   });
 };
 
@@ -105,7 +97,7 @@ const deleteTask = async (req, res) => {
     return res.status(400).json({ message: "Invalid task id" });
   }
 
-  const task = await Task.findById(taskId);
+  const task = await taskRepo.getById(taskId);
   if (!task) {
     return res.status(404).json({
       message: "Task Not Found",
@@ -122,7 +114,7 @@ const deleteTask = async (req, res) => {
       message: "Not authorized",
     });
   }
-  await task.deleteOne();
+  await taskRepo.deleteById(taskId);
   return res.status(200).json({
     message: "Task Deleted Successfully!",
   });
