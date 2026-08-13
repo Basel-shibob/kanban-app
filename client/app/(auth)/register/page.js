@@ -15,7 +15,20 @@ export default function Register() {
     e.preventDefault();
     try {
       const data = await registerUser(name, email, password);
-      router.push("/login");
+      if (!data) {
+        setError("Registration failed. Please try again.");
+        return;
+      }
+      if (data.message === "ALREADY_EXISTS") {
+        setError("This email is already registered. Please login instead.");
+        return;
+      }
+      if (!data.userToken) {
+        setError("Registration failed. Please try again.");
+        return;
+      }
+      localStorage.setItem("token", data.userToken);
+      router.push("/dashboard");
     } catch (error) {
       console.error("Error registering", error);
       setError("Failed to register");

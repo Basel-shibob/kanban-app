@@ -20,11 +20,14 @@ async function registerUser(req, res) {
     });
 
     await newUser.save();
-
+    const userToken = jwt.sign({ id: newUser._id }, process.env.JWT_SECRET, {
+      expiresIn: "7d",
+    });
     return res.status(201).json({
       message: "New user created",
       name: name,
       email: email,
+      userToken: userToken
     });
   } catch (error) {
     console.error("registerUser failed:", error);

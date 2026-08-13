@@ -14,6 +14,10 @@ export default function Login() {
     e.preventDefault();
     try {
       const data = await loginUser(email, password);
+      if (!data || !data.userToken) {
+        setError("Invalid email or password");
+        return;
+      }
       localStorage.setItem("token", data.userToken);
       router.push("/dashboard");
     } catch (error) {
