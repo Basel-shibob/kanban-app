@@ -1,13 +1,12 @@
+require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
-require('dotenv').config();
 const connectDB = require('./config/db.js');
 const authRoutes = require('./routes/authRoutes.js');
 const boardRoutes = require('./routes/boardRoutes.js');
 const taskRoutes = require('./routes/taskRoutes.js')
-const app = express();
 
-connectDB();
+const app = express();
 
 app.use((req, res, next) => {
   res.header('Access-Control-Allow-Origin', '*');
@@ -34,6 +33,16 @@ app.get('/api/health', (req, res) =>{
 
 const PORT = process.env.PORT || 5000;
 
-app.listen(PORT, () => {
-	console.log(`server running on port:${PORT}`);
-});
+const startServer = async () => {
+  try {
+    await connectDB();
+    app.listen(PORT, () => {
+      console.log(`Server running on port: ${PORT}`);
+    });
+  } catch (error) {
+    console.error('Error starting server:', error);
+    process.exit(1);
+  }
+};
+
+startServer();
