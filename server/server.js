@@ -5,6 +5,7 @@ const connectDB = require('./config/db.js');
 const authRoutes = require('./routes/authRoutes.js');
 const boardRoutes = require('./routes/boardRoutes.js');
 const taskRoutes = require('./routes/taskRoutes.js')
+const errorHandler = require('./middleware/errorHandler.js');
 
 const app = express();
 
@@ -26,10 +27,15 @@ app.use('/api/auth', authRoutes);
 app.use('/api/boards', boardRoutes);
 app.use('/api/tasks', taskRoutes);
 
-
 app.get('/api/health', (req, res) =>{
 	res.json({ status: 'Server is alive', timestamp: new Date() });
 });
+
+app.use((req, res) => {
+  res.status(404).json({ message: 'Route not found' });
+});
+
+app.use(errorHandler);
 
 const PORT = process.env.PORT || 5000;
 
