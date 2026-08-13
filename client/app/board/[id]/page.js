@@ -50,7 +50,7 @@ function Column({ col, tasks, onMove, onDelete }) {
       <div className="flex flex-col gap-2">
         {items.map((task) => (
           <div
-            key={task._id}
+            key={task.id}
             className="group bg-surface border border-border hover:border-[#2c2d30] rounded-[7px] p-3 transition-colors"
           >
             <p className="text-sm text-text font-medium">{task.title}</p>
@@ -59,13 +59,13 @@ function Column({ col, tasks, onMove, onDelete }) {
             )}
             <div className="flex items-center gap-3 mt-3 opacity-0 group-hover:opacity-100 transition-opacity">
               <button
-                onClick={() => onMove(task._id, col.next)}
+                onClick={() => onMove(task.id, col.next)}
                 className="text-xs text-muted hover:text-accent transition-colors"
               >
                 {col.nextLabel}
               </button>
               <button
-                onClick={() => onDelete(task._id)}
+                onClick={() => onDelete(task.id)}
                 className="text-xs text-faint hover:text-danger transition-colors"
               >
                 Delete

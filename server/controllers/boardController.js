@@ -1,6 +1,6 @@
 const Board = require("../models/Board.js");
 const mongoose = require("mongoose");
-const Task = require("../models/Task.js");
+const taskRepo = require("../storage/taskRepository.js");
 
 const createBoard = async (req, res) => {
   const { title } = req.body;
@@ -31,7 +31,7 @@ const deleteBoard = async (req, res) => {
     return res.status(404).json({ message: "Board not found" });
   }
   if (board.user.toString() === req.user.id) {
-    const { deletedCount } = await Task.deleteMany({ board: board._id });
+    const deletedCount = await taskRepo.removeAllByBoard(board._id);
     await board.deleteOne();
     res.status(200).json({
       message: " Board deleted successfully ",
