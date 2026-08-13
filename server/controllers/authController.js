@@ -1,6 +1,6 @@
-const User = require("../models/User.js");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const userRepo = require("../storage/userRepository.js");
 
 async function registerUser(req, res) {
   const { name, email, password } = req.body;
@@ -8,18 +8,12 @@ async function registerUser(req, res) {
     return res.status(400).json({ message: "Please send valid data !" });
   }
 
-  const checkEmail = await User.findOne({ email });
+  const checkEmail = await userRepo.getByEmail(email);
   if (checkEmail) {
     return res.status(400).json({ message: "ALREADY_EXISTS" });
   }
-  const newUser = new User({
-    name,
-    email,
-    password,
-  });
-
-  await newUser.save();
-  const userToken = jwt.sign({ id: newUser._id }, process.env.JWT_SECRET, {
+  const newUser = await userRepo.create({ name, email, password });
+  const userToken = jwt.sign({ id: newUser.id }, process.env.JWT_SECRET, {
     expiresIn: "7d",
   });
   return res.status(201).json({
@@ -36,14 +30,14 @@ async function loginUser(req, res) {
     return res.status(400).json({ message: "Please send valid data !" });
   }
 
-  const user = await User.findOne({ email });
+  const user = await userRepo.getByEmailWithPassword(email);
   if (user) {
     const stordHash = user.password;
     const verifyPassword = await bcrypt.compare(password, stordHash);
     if (!verifyPassword) {
       return res.status(401).json({ message: "Invalid credentials" });
     } else {
-      const userToken = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
+      const userToken = jwt.sign({ id: user.id }, process.env.JWT_SECRET, {
         expiresIn: "7d",
       });
       return res.status(200).json({ userToken: userToken });
