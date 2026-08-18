@@ -9,6 +9,7 @@ const errorHandler = require("./middleware/errorHandler.js");
 const helmet = require("helmet");
 
 const app = express();
+app.set("trust proxy", 1);
 
 const allowedOrigins = ["http://localhost:3000"];
 if (process.env.CLIENT_URL) {
