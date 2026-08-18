@@ -6,6 +6,7 @@ const loginLimiter = rateLimiter({
   message: { message: "Too many login attempts, please try again later." },
   standardHeaders: true,
   legacyHeaders: false,
+  skipSuccessfulRequests: true, // Only count failed requests towards the limit
 });
 
 module.exports = { loginLimiter };

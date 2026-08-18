@@ -5,12 +5,12 @@ const userRepo = require("../storage/userRepository.js");
 async function registerUser(req, res) {
   const { name, email, password } = req.body;
   if (!name || !email || !password) {
-    return res.status(400).json({ message: "Please send valid data !" });
+    return res.status(400).json({ message: "Name, email, and password are required" });
   }
 
   const checkEmail = await userRepo.getByEmail(email);
   if (checkEmail) {
-    return res.status(400).json({ message: "ALREADY_EXISTS" });
+    return res.status(409).json({ message: "This email is already registered" });
   }
   const newUser = await userRepo.create({ name, email, password });
   const userToken = jwt.sign({ id: newUser.id }, process.env.JWT_SECRET, {
@@ -27,7 +27,7 @@ async function registerUser(req, res) {
 async function loginUser(req, res) {
   const { email, password } = req.body;
   if (!email || !password) {
-    return res.status(400).json({ message: "Please send valid data !" });
+    return res.status(400).json({ message: "Email and password are required" });
   }
 
   const user = await userRepo.getByEmailWithPassword(email);

@@ -8,41 +8,58 @@ export default function Dashboard() {
   const [boards, setBoards] = useState([]);
   const [title, setTitle] = useState("");
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
   useEffect(() => {
     const checkAuth = async () => {
       const token = localStorage.getItem("token");
-      // console.log("token is:", token);
       if (!token) {
         router.push("/login");
         return;
       }
-      const isValid = await verifyToken();
-      if (!isValid) {
+
+      try {
+        await verifyToken();
+      } catch (err) {
         localStorage.removeItem("token");
         router.push("/login");
+        return;
       }
 
       const fetchData = async () => {
-        const data = await getBoards();
-        setBoards(data.boards);
-        setLoading(false);
+        try {
+          const data = await getBoards();
+          setBoards(data.boards);
+        } catch (error) {
+          setError(error.message);
+        } finally{
+          setLoading(false);
+        }
       };
       fetchData();
     };
     checkAuth();
   }, []);
   const handleCreateBoard = async () => {
-    if (title) {
-      await createBoard(title);
-      setTitle("");
-      const data = await getBoards();
-      setBoards(data.boards);
+    try {
+      if (title) {
+        await createBoard(title);
+        setTitle("");
+        const data = await getBoards();
+        setBoards(data.boards);
+      }
+    } catch (error) {
+      setError(error.message);
     }
   };
   const handleDeleteBoard = async (id) => {
-    await deleteBoard(id);
-    const data = await getBoards();
-    setBoards(data.boards);
+    try {
+      await deleteBoard(id);
+      const data = await getBoards();
+      setBoards(data.boards);
+    } catch (error) {
+      setError(error.message);
+    }
   };
   if (loading) return <div className="text-muted p-6 text-sm">Loading...</div>;
   return (
@@ -65,6 +82,7 @@ export default function Dashboard() {
         <main className="max-w-5xl mx-auto px-6 py-8">
           {/* Create a new board */}
           <div className="flex items-center gap-2 mb-8">
+            {error && <p className="text-danger text-sm mb-4">{error}</p>}
             <input
               type="text"
               name="title"
@@ -79,7 +97,7 @@ export default function Dashboard() {
               onClick={handleCreateBoard}
               className="bg-accent hover:bg-[#6872e5] text-white text-sm font-medium px-3 py-2 rounded-[7px] transition-colors"
             >
-             Create board
+              Create board
             </button>
           </div>
 
@@ -87,8 +105,16 @@ export default function Dashboard() {
             Your Boards
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            {!error && boards.length === 0 && (
+              <p className="text-faint text-sm">
+                No boards yet. Create your first one above.
+              </p>
+            )}
             {boards.map((board) => (
-              <div key={board.id} className="group bg-surface border border-border hover:border-[#2c2d30] rounded-[7px] p-4 transition-colors">
+              <div
+                key={board.id}
+                className="group bg-surface border border-border hover:border-[#2c2d30] rounded-[7px] p-4 transition-colors"
+              >
                 <p
                   onClick={() => {
                     router.push(`/board/${board.id}`);

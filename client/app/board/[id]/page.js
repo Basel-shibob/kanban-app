@@ -48,6 +48,9 @@ function Column({ col, tasks, onMove, onDelete }) {
         </span>
       </div>
       <div className="flex flex-col gap-2">
+        {items.length === 0 && (
+          <p className="text-faint text-sm">No tasks</p>
+        )}
         {items.map((task) => (
           <div
             key={task.id}
@@ -95,16 +98,23 @@ export default function BoardPage() {
         return;
       }
 
-      const isValid = await verifyToken();
-      if (!isValid) {
+      try {
+        await verifyToken();
+      } catch (err) {
         localStorage.removeItem("token");
         router.push("/login");
+        return;
       }
 
       const fetchData = async () => {
-        const data = await getTasks(params.id);
-        setTasks(data.tasks);
-        setLoading(false);
+        try {
+          const data = await getTasks(params.id);
+          setTasks(data.tasks);
+        } catch (err) {
+          setError(err.message);
+        } finally {
+          setLoading(false);
+        }
       };
       fetchData();
     };
@@ -112,25 +122,37 @@ export default function BoardPage() {
   }, []);
 
   const handleCreateTask = async () => {
-    if (title) {
-      await createTask(title, description, params.id);
-      setTitle("");
-      setDescription("");
-      const data = await getTasks(params.id);
-      setTasks(data.tasks);
+    try {
+      if (title) {
+        await createTask(title, description, params.id);
+        setTitle("");
+        setDescription("");
+        const data = await getTasks(params.id);
+        setTasks(data.tasks);
+      }
+    } catch (err) {
+      setError(err.message);
     }
   };
 
   const handleDeleteTask = async (id) => {
-    await deleteTask(id);
-    const data = await getTasks(params.id);
-    setTasks(data.tasks);
+    try {
+      await deleteTask(id);
+      const data = await getTasks(params.id);
+      setTasks(data.tasks);
+    } catch (err) {
+      setError(err.message);
+    }
   };
 
   const handleUpdateTask = async (id, status) => {
-    await updateTask(id, status);
-    const data = await getTasks(params.id);
-    setTasks(data.tasks);
+    try {
+      await updateTask(id, status);
+      const data = await getTasks(params.id);
+      setTasks(data.tasks);
+    } catch (err) {
+      setError(err.message);
+    }
   };
 
   if (loading) return <div className="text-muted p-6 text-sm">Loading…</div>;
@@ -152,6 +174,7 @@ export default function BoardPage() {
         </header>
 
         <div className="max-w-6xl mx-auto px-6 py-6">
+          {error && <p className="text-danger text-sm mb-4">{error}</p>}
           <div className="flex items-center gap-2 mb-8">
             <input
               placeholder="Task title"

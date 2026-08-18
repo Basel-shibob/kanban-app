@@ -1,170 +1,60 @@
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
-const registerUser = async (name, email, password ) => {
-  try {
-    const response = await fetch(`${API_URL}/api/auth/register`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, email, password }),
-    });
-    const data = await response.json();
-    return data;
-  } catch (error) {
-    console.log(error);
+const request = async (path, options = {}) => {
+  const token = localStorage.getItem('token');
+  const response = await fetch(`${API_URL}${path}`, {
+    method: options.method || 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+    },
+    ...(options.body ? { body: JSON.stringify(options.body) } : {}),
+  });
+  const data = await response.json();
+  if(!response.ok) {
+    const error = new Error(data.message || 'Something went wrong');
+    error.status = response.status;
+    throw error;
   }
+  return data;
 };
 
-const loginUser = async ( email, password ) => {
-  try {
-    const response = await fetch(`${API_URL}/api/auth/login`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password }),
-    });
-    console.log('response status:', response.status);
-    const data = await response.json();
-    console.log('response data:', data);
-    return data;
-  } catch (error) {
-    console.log('fetch error:', error);
-  }
-};
+const registerUser = (name, email, password) => request("/api/auth/register", {
+  method: "POST",
+  body: { name, email, password },
+});
+const loginUser = (email, password) => request("/api/auth/login", {
+  method: "POST",
+  body: { email, password },
+});
 
-const verifyToken = async () =>{
-  const token = localStorage.getItem('token')
-  try{
-    const response = await fetch(`${API_URL}/api/auth/verify`, {
-      method: "GET",
-      headers: {
-        "Authorization": `Bearer ${token}`
-      }
-    })
-    return response.ok
-  }catch(error){
-    console.log(error)
-  }
-}
+const verifyToken = () => request("/api/auth/verify");
 
-const getBoards = async () =>  {
-  const token = localStorage.getItem('token');
-  try{
-    const response = await fetch(`${API_URL}/api/boards`, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${token}`
-      }
-    });
-    const data = await response.json();
-    return data;
-  }catch(error){
-    console.log(error);
-  }
-}
+const getBoards = () => request("/api/boards");
 
-const createBoard = async (title)=>{
-  const token = localStorage.getItem('token');
-  try{
-    const response = await fetch(`${API_URL}/api/boards`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${token}`
-      },
-      body: JSON.stringify({ title })
-    });
-    const data = await response.json();
-    return data;
-  }catch(error){
-    console.log(error);
-  }
-}
+const createBoard = (title) => request("/api/boards", {
+  method: "POST",
+  body: { title },
+});
 
-const deleteBoard = async (id) => {
-  const token = localStorage.getItem('token');
-  try{
-    const response = await fetch(`${API_URL}/api/boards/${id}`, {
-      method: "DELETE",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${token}`
-      },
-    });
-    const data = await response.json();
-    return data;
-  }catch(error){
-    console.log(error);
-  }
-}
+const deleteBoard = (id) => request(`/api/boards/${id}`, {
+  method: "DELETE",
+});
 
-const getTasks = async (boardId)=>{
-  const token = localStorage.getItem('token');
-  try{
-    const response = await fetch(`${API_URL}/api/tasks/${boardId}`, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${token}`
-      },
-    });
-    const data = await response.json();
-    return data;
-  }catch(error){
-    console.log(error)
-  }
-}
+const getTasks = (boardId) => request(`/api/tasks/${boardId}`);
 
-const createTask = async (title, description, boardId)=>{
-  const token = localStorage.getItem('token');
-  try {
-    const response = await fetch(`${API_URL}/api/tasks`,{
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${token}`
-      },
-      body: JSON.stringify({ title, description, boardId }),
-    });
-    const data = await response.json()
-    return data
-  } catch (error) {
-    console.log(error)
-  }
-}
+const createTask = (title, description, boardId) => request("/api/tasks", {
+  method: "POST",
+  body: { title, description, boardId },
+});
 
-const updateTask = async (id, status)=>{
-  const token = localStorage.getItem('token');
-  try {
-    const response = await fetch(`${API_URL}/api/tasks/${id}`, {
-      method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${token}`
-      },
-      body: JSON.stringify({status})
-    });
-    const data = await response.json();
-    return data;
-  } catch (error) {
-    console.log(error);
-  }
-}
+const updateTask = (id, status) => request(`/api/tasks/${id}`, {
+  method: "PATCH",
+  body: { status },
+});
 
-const deleteTask  = async (id)=>{
-  const token = localStorage.getItem('token');
-  try {
-    const response = await fetch(`${API_URL}/api/tasks/${id}`, {
-      method: "DELETE",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${token}`
-      }
-    });
-    const data = await response.json();
-    return data;
-  } catch (error) {
-    console.log(error);
-  }
-}
+const deleteTask = (id) => request(`/api/tasks/${id}`, {
+  method: "DELETE",
+});
 
 export { registerUser, loginUser, getBoards, createBoard, deleteBoard, getTasks, createTask, updateTask, deleteTask, verifyToken };

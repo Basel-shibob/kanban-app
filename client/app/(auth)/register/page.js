@@ -1,7 +1,7 @@
 "use client";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { registerUser } from "../../../lib/api";
+import { registerUser } from "@/lib/api";
 import Link from "next/link";
 
 export default function Register() {
@@ -10,30 +10,22 @@ export default function Register() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
+    setError("");
     try {
       const data = await registerUser(name, email, password);
-      if (!data) {
-        setError("Registration failed. Please try again.");
-        return;
-      }
-      if (data.message === "ALREADY_EXISTS") {
-        setError("This email is already registered. Please login instead.");
-        return;
-      }
-      if (!data.userToken) {
-        setError("Registration failed. Please try again.");
-        return;
-      }
       localStorage.setItem("token", data.userToken);
       router.push("/dashboard");
     } catch (error) {
-      console.error("Error registering", error);
-      setError("Failed to register");
+      setError(error.message || "something went wrong");
+    } finally {
+      setLoading(false);
     }
-  };
+  }
 
   return (
     <>
@@ -83,8 +75,9 @@ export default function Register() {
             <button
               className="bg-accent hover:bg-[#6872e5] text-white text-sm font-medium py-2 rounded-[7px] transition-colors mt-1"
               type="submit"
+              disabled={loading}
             >
-              Create account
+              {loading ? "Creating account..." : "Create account"}
             </button>
           </form>
           <p className="text-sm text-muted text-center mt-4">

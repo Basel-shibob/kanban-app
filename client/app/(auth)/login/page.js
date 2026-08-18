@@ -9,20 +9,20 @@ export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const handleLogin = async (e) => {
     e.preventDefault();
+    setLoading(true);
+    setError("");
     try {
       const data = await loginUser(email, password);
-      if (!data || !data.userToken) {
-        setError("Invalid email or password");
-        return;
-      }
       localStorage.setItem("token", data.userToken);
       router.push("/dashboard");
-    } catch (error) {
-      console.error("Error login", error);
-      setError("Failed to login");
+    } catch (err) {
+      setError(err.message || "something went wrong");
+    } finally {
+      setLoading(false);
     }
   };
   return (
@@ -63,8 +63,9 @@ export default function Login() {
             <button
               type="submit"
               className="bg-accent hover:bg-[#6872e5] text-white text-sm font-medium py-2 rounded-[7px] transition-colors mt-1"
+              disabled={loading}
             >
-              Sign in
+              {loading ? "Signing in..." : "Sign in"}
             </button>
           </form>
           <p className="text-sm text-muted text-center mt-4">
