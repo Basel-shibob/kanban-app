@@ -9,23 +9,12 @@ const errorHandler = require("./middleware/errorHandler.js");
 
 const app = express();
 
-app.use((req, res, next) => {
-  res.header("Access-Control-Allow-Origin", "*");
-  res.header(
-    "Access-Control-Allow-Methods",
-    "GET, POST, PUT, PATCH, DELETE, OPTIONS",
-  );
-  res.header(
-    "Access-Control-Allow-Headers",
-    "Origin, X-Requested-With, Content-Type, Accept, Authorization",
-  );
-  if (req.method === "OPTIONS") {
-    return res.status(200).end();
-  }
-  next();
-});
+const allowedOrigins = ["http://localhost:3000"];
+if (process.env.CLIENT_URL) {
+  allowedOrigins.push(process.env.CLIENT_URL);
+}
 
-app.use(cors());
+app.use(cors({ origin: allowedOrigins, credentials: true}));
 app.use(express.json());
 
 app.use("/api/auth", authRoutes);
