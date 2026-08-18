@@ -6,6 +6,7 @@ const authRoutes = require("./routes/authRoutes.js");
 const boardRoutes = require("./routes/boardRoutes.js");
 const taskRoutes = require("./routes/taskRoutes.js");
 const errorHandler = require("./middleware/errorHandler.js");
+const helmet = require("helmet");
 
 const app = express();
 
@@ -14,6 +15,7 @@ if (process.env.CLIENT_URL) {
   allowedOrigins.push(process.env.CLIENT_URL);
 }
 
+app.use(helmet());
 app.use(cors({ origin: allowedOrigins, credentials: true}));
 app.use(express.json());
 
