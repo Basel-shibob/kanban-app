@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { createTask, deleteTask, getTasks, updateTask } from "@/lib/api";
 import { useAuth } from "@/hooks/useAuth";
+import Column from "@/components/Column";
 
 const COLUMNS = [
   {
@@ -27,52 +28,6 @@ const COLUMNS = [
     nextLabel: "Reopen",
   },
 ];
-
-function Column({ col, tasks, onMove, onDelete }) {
-  const items = tasks.filter((t) => t.status === col.key);
-  return (
-    <div className="flex flex-col">
-      <div className="flex items-center gap-2 mb-3 px-1">
-        <span
-          className="w-2 h-2 rounded-full"
-          style={{ background: col.dot }}
-        />
-        <span className="text-sm font-medium text-text">{col.label}</span>
-        <span className="text-xs text-faint bg-surface-2 px-1.5 rounded ">
-          {items.length}
-        </span>
-      </div>
-      <div className="flex flex-col gap-2">
-        {items.length === 0 && <p className="text-faint text-sm">No tasks</p>}
-        {items.map((task) => (
-          <div
-            key={task.id}
-            className="group bg-surface border border-border hover:border-[#2c2d30] rounded-[7px] p-3 transition-colors"
-          >
-            <p className="text-sm text-text font-medium">{task.title}</p>
-            {task.description && (
-              <p className="text-xs text-muted mt-1">{task.description}</p>
-            )}
-            <div className="flex items-center gap-3 mt-3 opacity-0 group-hover:opacity-100 transition-opacity">
-              <button
-                onClick={() => onMove(task.id, col.next)}
-                className="text-xs text-muted hover:text-accent transition-colors"
-              >
-                {col.nextLabel}
-              </button>
-              <button
-                onClick={() => onDelete(task.id)}
-                className="text-xs text-faint hover:text-danger transition-colors"
-              >
-                Delete
-              </button>
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
 
 export default function BoardPage() {
   const router = useRouter();
