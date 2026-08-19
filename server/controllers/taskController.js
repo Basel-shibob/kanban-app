@@ -6,7 +6,7 @@ const createTask = async (req, res) => {
     title,
     description,
   });
-  res.status(201).json({ message: "New task created successfully", newTask });
+  res.status(201).json({ message: "New task created successfully", task: newTask });
 };
 
 const getTasks = async (req, res) => {

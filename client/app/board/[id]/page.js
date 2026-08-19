@@ -55,25 +55,24 @@ export default function BoardPage() {
   }, [checking]);
 
   const handleCreateTask = async () => {
+    if(!title) return;
     try {
-      if (title) {
-        await createTask(title, description, params.id);
-        setTitle("");
-        setDescription("");
-        const data = await getTasks(params.id);
-        setTasks(data.tasks);
-      }
+      const data = await createTask(title, description, params.id);
+      setTasks([...tasks, data.task]);
+      setTitle("");
+      setDescription("");
     } catch (err) {
       setError(err.message);
     }
   };
 
   const handleDeleteTask = async (id) => {
+    const previous = tasks;
+    setTasks(tasks.filter((t)=>t.id !== id ));
     try {
       await deleteTask(id);
-      const data = await getTasks(params.id);
-      setTasks(data.tasks);
     } catch (err) {
+      setTasks(previous);
       setError(err.message);
     }
   };
