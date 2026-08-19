@@ -44,9 +44,23 @@ const deleteTask  = async (taskId, userId) => {
     return taskRepo.deleteById(taskId);
 }
 
+const reorderTasks = async (boardId, userId, status, taskIds) => {
+    await assertBoardOwned(boardId, userId);
+    if(!validStatuses.includes(status)) throw new AppError('Invalid status', 400);
+    if(!Array.isArray(taskIds)) throw new AppError('tasksIds must be an array', 400);
+
+    const tasks = await taskRepo.getAllByBoard(boardId);
+    const boardTaskIds = new Set(tasks.map((t) => t.id));
+    const allBelong = taskIds.every((id) => boardTaskIds.has(id));
+    if(!allBelong) throw new AppError('Task does not belong to this board', 400);
+
+    return taskRepo.setOrder(taskIds, status);
+};
+
 module.exports = {
     listTasks,
     createTask,
     updateTask,
-    deleteTask
+    deleteTask,
+    reorderTasks
 };

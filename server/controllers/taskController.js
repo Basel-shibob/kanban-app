@@ -34,4 +34,10 @@ const deleteTask = async (req, res) => {
   res.status(200).json({ message: "Task deleted successfully" });
 };
 
-module.exports = { createTask, getTasks, updateTask, deleteTask };
+const reorderTasks = async (req, res) => {
+  const { boardId, status, taskIds } = req.body
+  await taskService.reorderTasks(boardId, req.user.id, status, taskIds)
+  return res.status(200).json({ message: "Task reordered"})
+}
+
+module.exports = { createTask, getTasks, updateTask, deleteTask, reorderTasks };

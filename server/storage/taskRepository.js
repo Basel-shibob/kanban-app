@@ -65,6 +65,17 @@ const removeAllByBoard = async (boardId) => {
 const countByBoardAndStatus = async (boardId, status) => {
   return await Task.countDocuments({ board: boardId, status })
 }
+const setOrder = async (taskIds, status) =>{
+  if(taskIds.length === 0) return 0;
+  const ops = taskIds.map((id, index) => ({
+    updateOne: {
+      filter: { _id: id },
+      update: {status, order: index},
+    }
+  }));
+  const result = await Task.bulkWrite(ops);
+  return result.modifiedCount;
+}
 
 module.exports = {
   getAllByBoard,
@@ -73,5 +84,6 @@ module.exports = {
   update,
   deleteById,
   removeAllByBoard,
-  countByBoardAndStatus
+  countByBoardAndStatus,
+  setOrder
 };
