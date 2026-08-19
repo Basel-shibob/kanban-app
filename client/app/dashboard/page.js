@@ -28,23 +28,24 @@ export default function Dashboard() {
   }, [checking]);
 
   const handleCreateBoard = async () => {
+    setError("");
+    if (!title) return;
     try {
-      if (title) {
-        await createBoard(title);
+        const data = await createBoard(title);
+        setBoards([...boards, data.board])
         setTitle("");
-        const data = await getBoards();
-        setBoards(data.boards);
-      }
     } catch (error) {
       setError(error.message);
     }
   };
   const handleDeleteBoard = async (id) => {
+    setError("");
+    const previous = boards;
+    setBoards(boards.filter((b) => b.id !== id));
     try {
       await deleteBoard(id);
-      const data = await getBoards();
-      setBoards(data.boards);
     } catch (error) {
+      setBoards(previous);
       setError(error.message);
     }
   };

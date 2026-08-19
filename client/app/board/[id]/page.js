@@ -55,6 +55,7 @@ export default function BoardPage() {
   }, [checking]);
 
   const handleCreateTask = async () => {
+    setError("");
     if(!title) return;
     try {
       const data = await createTask(title, description, params.id);
@@ -67,6 +68,7 @@ export default function BoardPage() {
   };
 
   const handleDeleteTask = async (id) => {
+    setError("");
     const previous = tasks;
     setTasks(tasks.filter((t)=>t.id !== id ));
     try {
@@ -78,6 +80,7 @@ export default function BoardPage() {
   };
 
   const handleUpdateTask = async (id, status) => {
+    setError("");
     const previous = tasks;
     setTasks(tasks.map((t) => (t.id === id ? {...t, status} : t)));
     try {
