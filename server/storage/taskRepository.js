@@ -5,6 +5,7 @@ const toTask = (doc) => {
     id: doc._id.toString(),
     title: doc.title,
     description: doc.description,
+    order: doc.order,
     status: doc.status,
     board: doc.board.toString(),
     createdAt: doc.createdAt,
@@ -13,7 +14,10 @@ const toTask = (doc) => {
 };
 
 const getAllByBoard = async (boardId) => {
-  const docs = await Task.find({ board: boardId });
+  const docs = await Task.find({ board: boardId }).sort({
+    order: 1,
+    createdAt: 1,
+  });
   return docs.map(toTask);
 };
 
@@ -25,18 +29,21 @@ const getById = async (id) => {
   return toTask(doc);
 };
 
-const create = async ({ title, description, boardId }) => {
+const create = async ({ title, description, boardId, order }) => {
   const newTask = new Task({
     title,
     description,
     board: boardId,
+    order
   });
   await newTask.save();
   return toTask(newTask);
 };
 
 const update = async (id, updateData) => {
-  const doc = await Task.findByIdAndUpdate(id, updateData, { returnDocument: "after" });
+  const doc = await Task.findByIdAndUpdate(id, updateData, {
+    returnDocument: "after",
+  });
   if (!doc) {
     return null;
   }
@@ -53,6 +60,10 @@ const deleteById = async (id) => {
 const removeAllByBoard = async (boardId) => {
   const { deletedCount } = await Task.deleteMany({ board: boardId });
   return deletedCount;
+};
+
+const countByBoardAndStatus = async (boardId, status) => {
+  return await Task.countDocuments({ board: boardId, status })
 }
 
 module.exports = {
@@ -62,4 +73,5 @@ module.exports = {
   update,
   deleteById,
   removeAllByBoard,
+  countByBoardAndStatus
 };

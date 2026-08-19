@@ -27,9 +27,10 @@ const listTasks = async (boardId, userId) => {
 };
 
 const createTask = async (boardId, userId, { title, description }) => {
+    const order = await taskRepo.countByBoardAndStatus(boardId, "todo")
     await assertBoardOwned(boardId, userId);
     if(!title) throw new AppError('Title is required', 400);
-    return taskRepo.create({ title, description, boardId });
+    return taskRepo.create({ title, description, boardId, order });
 };
 
 const updateTask = async (taskId, userId, status) => {
