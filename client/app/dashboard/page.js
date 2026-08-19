@@ -1,7 +1,8 @@
 "use client";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { createBoard, deleteBoard, getBoards, verifyToken } from "@/lib/api";
+import { createBoard, deleteBoard, getBoards } from "@/lib/api";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function Dashboard() {
   const router = useRouter();
@@ -9,37 +10,23 @@ export default function Dashboard() {
   const [title, setTitle] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const { checking } = useAuth();
 
   useEffect(() => {
-    const checkAuth = async () => {
-      const token = localStorage.getItem("token");
-      if (!token) {
-        router.push("/login");
-        return;
-      }
-
+    if (checking) return;
+    const fetchData = async () => {
       try {
-        await verifyToken();
-      } catch (err) {
-        localStorage.removeItem("token");
-        router.push("/login");
-        return;
+        const data = await getBoards();
+        setBoards(data.boards);
+      } catch (error) {
+        setError(error.message);
+      } finally {
+        setLoading(false);
       }
-
-      const fetchData = async () => {
-        try {
-          const data = await getBoards();
-          setBoards(data.boards);
-        } catch (error) {
-          setError(error.message);
-        } finally{
-          setLoading(false);
-        }
-      };
-      fetchData();
     };
-    checkAuth();
-  }, []);
+    fetchData();
+  }, [checking]);
+
   const handleCreateBoard = async () => {
     try {
       if (title) {
@@ -61,7 +48,8 @@ export default function Dashboard() {
       setError(error.message);
     }
   };
-  if (loading) return <div className="text-muted p-6 text-sm">Loading...</div>;
+  if (checking || loading)
+    return <div className="text-muted p-6 text-sm">Loading...</div>;
   return (
     <>
       <div className="min-h-screen bg-bg text-text">

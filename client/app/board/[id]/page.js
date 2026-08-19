@@ -1,13 +1,8 @@
 "use client";
 import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
-import {
-  createTask,
-  deleteTask,
-  getTasks,
-  updateTask,
-  verifyToken,
-} from "@/lib/api";
+import { createTask, deleteTask, getTasks, updateTask } from "@/lib/api";
+import { useAuth } from "@/hooks/useAuth";
 
 const COLUMNS = [
   {
@@ -48,9 +43,7 @@ function Column({ col, tasks, onMove, onDelete }) {
         </span>
       </div>
       <div className="flex flex-col gap-2">
-        {items.length === 0 && (
-          <p className="text-faint text-sm">No tasks</p>
-        )}
+        {items.length === 0 && <p className="text-faint text-sm">No tasks</p>}
         {items.map((task) => (
           <div
             key={task.id}
@@ -89,37 +82,22 @@ export default function BoardPage() {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [error, setError] = useState("");
+  const { checking } = useAuth();
 
   useEffect(() => {
-    const checkAuth = async () => {
-      const token = localStorage.getItem("token");
-      if (!token) {
-        router.push("/login");
-        return;
-      }
-
+    if (checking) return;
+    const fetchData = async () => {
       try {
-        await verifyToken();
+        const data = await getTasks(params.id);
+        setTasks(data.tasks);
       } catch (err) {
-        localStorage.removeItem("token");
-        router.push("/login");
-        return;
+        setError(err.message);
+      } finally {
+        setLoading(false);
       }
-
-      const fetchData = async () => {
-        try {
-          const data = await getTasks(params.id);
-          setTasks(data.tasks);
-        } catch (err) {
-          setError(err.message);
-        } finally {
-          setLoading(false);
-        }
-      };
-      fetchData();
     };
-    checkAuth();
-  }, []);
+    fetchData();
+  }, [checking]);
 
   const handleCreateTask = async () => {
     try {
@@ -155,7 +133,8 @@ export default function BoardPage() {
     }
   };
 
-  if (loading) return <div className="text-muted p-6 text-sm">Loading…</div>;
+  if (checking || loading)
+    return <div className="text-muted p-6 text-sm">Loading…</div>;
 
   return (
     <>
