@@ -79,11 +79,12 @@ export default function BoardPage() {
   };
 
   const handleUpdateTask = async (id, status) => {
+    const previous = tasks;
+    setTasks(tasks.map((t) => (t.id === id ? {...t, status} : t)));
     try {
       await updateTask(id, status);
-      const data = await getTasks(params.id);
-      setTasks(data.tasks);
     } catch (err) {
+      setTasks(previous)
       setError(err.message);
     }
   };
