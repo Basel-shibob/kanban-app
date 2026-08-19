@@ -3,7 +3,7 @@ const taskRepo = require("../storage/taskRepository.js");
 const boardRepo = require("../storage/boardRepository.js");
 
 const createBoard = async (req, res) => {
-  const { title } = req.body;
+  const title = req.body.title?.trim();
   if (!title) {
     return res.status(400).json({ message: "Title is required!" });
   }
@@ -12,7 +12,7 @@ const createBoard = async (req, res) => {
     title: title,
     userId: req.user.id,
   });
-  res.status(201).json(newBoard);
+  res.status(201).json({ message: "New board created successfully", board: newBoard });
 };
 
 const getBoards = async (req, res) => {
