@@ -7,6 +7,7 @@ import Column from "@/components/Column";
 import {
   DndContext,
   PointerSensor,
+  KeyboardSensor,
   useSensor,
   useSensors,
 } from "@dnd-kit/core";
@@ -46,6 +47,7 @@ export default function BoardPage() {
   const { checking } = useAuth();
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
+    useSensor(KeyboardSensor)
   );
 
   useEffect(() => {
