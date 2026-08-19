@@ -1,7 +1,10 @@
 "use client";
 import TaskCard from "./TaskCard";
+import { useDroppable } from "@dnd-kit/core";
+
 export default function Column({ col, tasks, onMove, onDelete }) {
   const items = tasks.filter((t) => t.status === col.key);
+  const { setNodeRef } = useDroppable({ id: col.key });
   return (
     <div className="flex flex-col">
       <div className="flex items-center gap-2 mb-3 px-1">
@@ -14,7 +17,7 @@ export default function Column({ col, tasks, onMove, onDelete }) {
           {items.length}
         </span>
       </div>
-      <div className="flex flex-col gap-2">
+      <div ref={setNodeRef} className="flex flex-col gap-2">
         {items.length === 0 && <p className="text-faint text-sm">No tasks</p>}
         {items.map((task) => (
           <TaskCard

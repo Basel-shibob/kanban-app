@@ -1,7 +1,22 @@
 "use client";
+import { useDraggable } from "@dnd-kit/core";
+
 export default function TaskCard({ task, nextLabel, onMove, onDelete }) {
+  const { attributes, listeners, setNodeRef, transform } = useDraggable({
+    id: task.id,
+  });
   return (
-    <div className="group bg-surface border border-border hover:border-[#2c2d30] rounded-[7px] p-3 transition-colors">
+    <div
+      ref={setNodeRef}
+      {...listeners}
+      {...attributes}
+      style={
+        transform
+          ? { transform: `translate3d(${transform.x}px,${transform.y}px, 0)` }
+          : undefined
+      }
+      className="group bg-surface border border-border hover:border-[#2c2d30] rounded-[7px] p-3 transition-colors"
+    >
       <p className="text-sm text-text font-medium">{task.title}</p>
       {task.description && (
         <p className="text-xs text-muted mt-1">{task.description}</p>

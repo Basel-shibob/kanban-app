@@ -4,6 +4,12 @@ import { useRouter, useParams } from "next/navigation";
 import { createTask, deleteTask, getTasks, updateTask } from "@/lib/api";
 import { useAuth } from "@/hooks/useAuth";
 import Column from "@/components/Column";
+import {
+  DndContext,
+  PointerSensor,
+  useSensor,
+  useSensors,
+} from "@dnd-kit/core";
 
 const COLUMNS = [
   {
@@ -38,6 +44,9 @@ export default function BoardPage() {
   const [description, setDescription] = useState("");
   const [error, setError] = useState("");
   const { checking } = useAuth();
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
+  );
 
   useEffect(() => {
     if (checking) return;
@@ -56,7 +65,7 @@ export default function BoardPage() {
 
   const handleCreateTask = async () => {
     setError("");
-    if(!title) return;
+    if (!title) return;
     try {
       const data = await createTask(title, description, params.id);
       setTasks([...tasks, data.task]);
@@ -70,7 +79,7 @@ export default function BoardPage() {
   const handleDeleteTask = async (id) => {
     setError("");
     const previous = tasks;
-    setTasks(tasks.filter((t)=>t.id !== id ));
+    setTasks(tasks.filter((t) => t.id !== id));
     try {
       await deleteTask(id);
     } catch (err) {
@@ -82,13 +91,21 @@ export default function BoardPage() {
   const handleUpdateTask = async (id, status) => {
     setError("");
     const previous = tasks;
-    setTasks(tasks.map((t) => (t.id === id ? {...t, status} : t)));
+    setTasks(tasks.map((t) => (t.id === id ? { ...t, status } : t)));
     try {
       await updateTask(id, status);
     } catch (err) {
-      setTasks(previous)
+      setTasks(previous);
       setError(err.message);
     }
+  };
+
+  const handleDragEnd = (event) => {
+    const { active, over } = event;
+    if (!over) return;
+    const task = tasks.find((t) => t.id === active.id);
+    if (!task || task.status == over.id) return;
+    handleUpdateTask(active.id, over.id);
   };
 
   if (checking || loading)
@@ -141,17 +158,19 @@ export default function BoardPage() {
               Add task
             </button>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {COLUMNS.map((col) => (
-              <Column
-                key={col.key}
-                col={col}
-                tasks={tasks}
-                onMove={handleUpdateTask}
-                onDelete={handleDeleteTask}
-              />
-            ))}
-          </div>
+          <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {COLUMNS.map((col) => (
+                <Column
+                  key={col.key}
+                  col={col}
+                  tasks={tasks}
+                  onMove={handleUpdateTask}
+                  onDelete={handleDeleteTask}
+                />
+              ))}
+            </div>
+          </DndContext>
         </div>
       </div>
     </>
