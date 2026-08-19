@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { createBoard, deleteBoard, getBoards } from "@/lib/api";
 import { useAuth } from "@/hooks/useAuth";
+import BoardCard from "@/components/BoardCard";
 
 export default function Dashboard() {
   const router = useRouter();
@@ -31,9 +32,9 @@ export default function Dashboard() {
     setError("");
     if (!title) return;
     try {
-        const data = await createBoard(title);
-        setBoards([...boards, data.board])
-        setTitle("");
+      const data = await createBoard(title);
+      setBoards([...boards, data.board]);
+      setTitle("");
     } catch (error) {
       setError(error.message);
     }
@@ -100,26 +101,12 @@ export default function Dashboard() {
               </p>
             )}
             {boards.map((board) => (
-              <div
+              <BoardCard
                 key={board.id}
-                className="group bg-surface border border-border hover:border-[#2c2d30] rounded-[7px] p-4 transition-colors"
-              >
-                <p
-                  onClick={() => {
-                    router.push(`/board/${board.id}`);
-                  }}
-                  className="text-text font-medium mb-3 cursor-pointer group-hover:text-accent transition-colors"
-                >
-                  {board.title}
-                </p>
-                <button
-                  onClick={() => handleDeleteBoard(board.id)}
-                  type="button"
-                  className="text-faint hover:text-danger text-xs transition-colors"
-                >
-                  Delete
-                </button>
-              </div>
+                board={board}
+                onOpen={() => router.push(`/board/${board.id}`)}
+                onDelete={() => handleDeleteBoard(board.id)}
+              />
             ))}
           </div>
         </main>
