@@ -1,6 +1,10 @@
 "use client";
 import TaskCard from "./TaskCard";
 import { useDroppable } from "@dnd-kit/core";
+import {
+  SortableContext,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
 
 export default function Column({ col, tasks, onMove, onDelete }) {
   const items = tasks.filter((t) => t.status === col.key);
@@ -17,18 +21,23 @@ export default function Column({ col, tasks, onMove, onDelete }) {
           {items.length}
         </span>
       </div>
-      <div ref={setNodeRef} className="flex flex-col gap-2">
-        {items.length === 0 && <p className="text-faint text-sm">No tasks</p>}
-        {items.map((task) => (
-          <TaskCard
-            key={task.id}
-            task={task}
-            nextLabel={col.nextLabel}
-            onMove={() => onMove(task.id, col.next)}
-            onDelete={() => onDelete(task.id)}
-          />
-        ))}
-      </div>
+      <SortableContext
+        items={items.map((t) => t.id)}
+        strategy={verticalListSortingStrategy}
+      >
+        <div ref={setNodeRef} className="flex flex-col gap-2">
+          {items.length === 0 && <p className="text-faint text-sm">No tasks</p>}
+          {items.map((task) => (
+            <TaskCard
+              key={task.id}
+              task={task}
+              nextLabel={col.nextLabel}
+              onMove={() => onMove(task.id, col.next)}
+              onDelete={() => onDelete(task.id)}
+            />
+          ))}
+        </div>
+      </SortableContext>
     </div>
   );
 }

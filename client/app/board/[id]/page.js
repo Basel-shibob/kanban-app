@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
-import { createTask, deleteTask, getTasks, updateTask } from "@/lib/api";
+import { createTask, deleteTask, getTasks, reorderTasks, updateTask } from "@/lib/api";
 import { useAuth } from "@/hooks/useAuth";
 import Column from "@/components/Column";
 import {
@@ -102,12 +102,40 @@ export default function BoardPage() {
     }
   };
 
-  const handleDragEnd = (event) => {
+  const handleDragEnd = async (event) => {
     const { active, over } = event;
     if (!over) return;
-    const task = tasks.find((t) => t.id === active.id);
-    if (!task || task.status == over.id) return;
-    handleUpdateTask(active.id, over.id);
+
+    const activeTask = tasks.find((t) => t.id === active.id);
+    if(!activeTask) return;
+
+    const overTask = tasks.find((t) => t.id === over.id);
+    const destStatus = overTask ? overTask.status : over.id;
+    if (!COLUMNS.some((c) => c.key === destStatus)) return
+
+    const previous = tasks;
+    setError("");
+
+    const destItems = tasks.filter((t) => t.status === destStatus && t.id !== active.id);
+    const overIndex = destItems.findIndex((t) => t.id === over.id);
+    const insertAt = overIndex === -1 ? destItems.length : overIndex;
+    
+    const newDest = [
+      ...destItems.slice(0, insertAt),
+      { ...activeTask, status: destStatus },
+      ...destItems.slice(insertAt),
+    ].map((t, i) => ({ ...t, order: i}));
+
+    const untoutched = tasks.filter((t) => t.status !== destStatus && t.id !== active.id);
+    setTasks([...untoutched, ...newDest]);
+
+    try {
+      await reorderTasks(params.id, destStatus, newDest.map((t) => t.id));
+    } catch(err) {
+      setTasks(previous);
+      setError(err.message);
+    }
+
   };
 
   if (checking || loading)

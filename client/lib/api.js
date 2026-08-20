@@ -15,7 +15,7 @@ const request = async (path, options = {}) => {
   } catch {
     throw new Error("Cannot reach the server. Check your connection.");
   }
-  
+
   const data = await response.json();
   if (!response.ok) {
     const error = new Error(data.message || "Something went wrong");
@@ -70,6 +70,12 @@ const deleteTask = (id) =>
     method: "DELETE",
   });
 
+const reorderTasks = (boardId, status, taskIds) =>
+  request("/api/tasks/reorder", {
+    method: "PATCH",
+    body: { boardId, status, taskIds },
+  });
+
 export {
   registerUser,
   loginUser,
@@ -81,4 +87,5 @@ export {
   updateTask,
   deleteTask,
   verifyToken,
+  reorderTasks
 };
