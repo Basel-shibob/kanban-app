@@ -19,6 +19,7 @@ import {
   useSensors,
   closestCorners,
 } from "@dnd-kit/core";
+import { arrayMove } from "@dnd-kit/sortable";
 
 const COLUMNS = [
   {
@@ -127,22 +128,33 @@ export default function BoardPage() {
     const previous = tasks;
     setError("");
 
-    const destItems = tasks.filter(
-      (t) => t.status === destStatus && t.id !== active.id,
-    );
-    const overIndex = destItems.findIndex((t) => t.id === over.id);
-    const insertAt = overIndex === -1 ? destItems.length : overIndex;
+    let newDest;
 
-    const newDest = [
-      ...destItems.slice(0, insertAt),
-      { ...taskActive, status: destStatus },
-      ...destItems.slice(insertAt),
-    ].map((t, i) => ({ ...t, order: i }));
+    if (taskActive.status === destStatus) {
+      const items = tasks.filter((t) => t.status === destStatus);
+      const oldIndex = items.findIndex((t) => t.id === active.id);
+      const found = items.findIndex((t) => t.id === over.id);
+      const newIndex = found === -1 ? items.length - 1 : found;
+      if (oldIndex === newIndex) return;
+      newDest = arrayMove(items, oldIndex, newIndex).map((t, i) => ({
+        ...t,
+        order: i,
+      }));
+    } else {
+      const destItems = tasks.filter((t) => t.status === destStatus);
+      const found = destItems.findIndex((t) => t.id === over.id);
+      const insertAt = found === -1 ? destItems.length : found;
+      newDest = [
+        ...destItems.slice(0, insertAt),
+        { ...taskActive, status: destStatus },
+        ...destItems.slice(insertAt),
+      ].map((t, i) => ({ ...t, order: i }));
+    }
 
-    const untoutched = tasks.filter(
+    const untouched = tasks.filter(
       (t) => t.status !== destStatus && t.id !== active.id,
     );
-    setTasks([...untoutched, ...newDest]);
+    setTasks([...untouched, ...newDest]);
 
     try {
       await reorderTasks(
@@ -216,7 +228,9 @@ export default function BoardPage() {
             <DragOverlay>
               {activeTask ? (
                 <div className="bg-surface border border-accent rounded-[7px] p-3">
-                  <p className="text-sm text-text font-medium">{activeTask.title}</p>
+                  <p className="text-sm text-text font-medium">
+                    {activeTask.title}
+                  </p>
                 </div>
               ) : null}
             </DragOverlay>
