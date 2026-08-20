@@ -1,15 +1,23 @@
 "use client";
 import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
-import { createTask, deleteTask, getTasks, reorderTasks, updateTask } from "@/lib/api";
+import {
+  createTask,
+  deleteTask,
+  getTasks,
+  reorderTasks,
+  updateTask,
+} from "@/lib/api";
 import { useAuth } from "@/hooks/useAuth";
 import Column from "@/components/Column";
 import {
   DndContext,
+  DragOverlay,
   PointerSensor,
   KeyboardSensor,
   useSensor,
   useSensors,
+  closestCorners,
 } from "@dnd-kit/core";
 
 const COLUMNS = [
@@ -47,8 +55,10 @@ export default function BoardPage() {
   const { checking } = useAuth();
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
-    useSensor(KeyboardSensor)
+    useSensor(KeyboardSensor),
   );
+  const [activeId, setActiveId] = useState(null);
+  const activeTask = tasks.find((t) => t.id === activeId);
 
   useEffect(() => {
     if (checking) return;
@@ -103,39 +113,47 @@ export default function BoardPage() {
   };
 
   const handleDragEnd = async (event) => {
+    setActiveId(null);
     const { active, over } = event;
     if (!over) return;
 
-    const activeTask = tasks.find((t) => t.id === active.id);
-    if(!activeTask) return;
+    const taskActive = tasks.find((t) => t.id === active.id);
+    if (!taskActive) return;
 
     const overTask = tasks.find((t) => t.id === over.id);
     const destStatus = overTask ? overTask.status : over.id;
-    if (!COLUMNS.some((c) => c.key === destStatus)) return
+    if (!COLUMNS.some((c) => c.key === destStatus)) return;
 
     const previous = tasks;
     setError("");
 
-    const destItems = tasks.filter((t) => t.status === destStatus && t.id !== active.id);
+    const destItems = tasks.filter(
+      (t) => t.status === destStatus && t.id !== active.id,
+    );
     const overIndex = destItems.findIndex((t) => t.id === over.id);
     const insertAt = overIndex === -1 ? destItems.length : overIndex;
-    
+
     const newDest = [
       ...destItems.slice(0, insertAt),
-      { ...activeTask, status: destStatus },
+      { ...taskActive, status: destStatus },
       ...destItems.slice(insertAt),
-    ].map((t, i) => ({ ...t, order: i}));
+    ].map((t, i) => ({ ...t, order: i }));
 
-    const untoutched = tasks.filter((t) => t.status !== destStatus && t.id !== active.id);
+    const untoutched = tasks.filter(
+      (t) => t.status !== destStatus && t.id !== active.id,
+    );
     setTasks([...untoutched, ...newDest]);
 
     try {
-      await reorderTasks(params.id, destStatus, newDest.map((t) => t.id));
-    } catch(err) {
+      await reorderTasks(
+        params.id,
+        destStatus,
+        newDest.map((t) => t.id),
+      );
+    } catch (err) {
       setTasks(previous);
       setError(err.message);
     }
-
   };
 
   if (checking || loading)
@@ -188,7 +206,20 @@ export default function BoardPage() {
               Add task
             </button>
           </div>
-          <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
+          <DndContext
+            onDragStart={(e) => setActiveId(e.active.id)}
+            collisionDetection={closestCorners}
+            sensors={sensors}
+            onDragEnd={handleDragEnd}
+            onDragCancel={() => setActiveId(null)}
+          >
+            <DragOverlay>
+              {activeTask ? (
+                <div className="bg-surface border border-accent rounded-[7px] p-3">
+                  <p className="text-sm text-text font-medium">{activeTask.title}</p>
+                </div>
+              ) : null}
+            </DragOverlay>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {COLUMNS.map((col) => (
                 <Column
